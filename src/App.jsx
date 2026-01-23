@@ -493,8 +493,9 @@ const ComplianceView = ({ library, needs, onAddNeed }) => {
   );
 };
 
-const NeedsView = ({ needs, goals, onAdd, onDelete }) => {
+const NeedsView = ({ needs, goals, onAdd, onDelete, onEdit }) => {
   const [isAdding, setIsAdding] = useState(false);
+  const [editingNeed, setEditingNeed] = useState(null);
   const [showRegModal, setShowRegModal] = useState(false);
   const [source, setSource] = useState('Customer');
   const [title, setTitle] = useState('');
@@ -506,9 +507,23 @@ const NeedsView = ({ needs, goals, onAdd, onDelete }) => {
     return getNextId(needs, prefix);
   }, [needs, source]);
 
+  const handleEdit = (need) => {
+    setEditingNeed(need);
+    setTitle(need.title);
+    setSource(need.source);
+    setText(need.text);
+    setLinkedGoalId(need.linkedGoalId || '');
+    setIsAdding(true);
+  };
+
   const handleSave = (e) => {
     e.preventDefault();
-    onAdd({ id: generatedId, title, source, text, linkedGoalId });
+    if (editingNeed) {
+      onEdit({ ...editingNeed, title, source, text, linkedGoalId });
+      setEditingNeed(null);
+    } else {
+      onAdd({ id: generatedId, title, source, text, linkedGoalId });
+    }
     setIsAdding(false);
     resetForm();
   };
@@ -518,6 +533,7 @@ const NeedsView = ({ needs, goals, onAdd, onDelete }) => {
     setText('');
     setSource('Customer');
     setLinkedGoalId('');
+    setEditingNeed(null);
   };
 
   const importRegulation = (reg) => {
@@ -551,7 +567,7 @@ const NeedsView = ({ needs, goals, onAdd, onDelete }) => {
 
       {isAdding && (
         <Card className="p-6 border-purple-200 ring-2 ring-purple-50">
-          <h3 className="text-md font-bold text-slate-800 mb-4">Define New Product Need</h3>
+          <h3 className="text-md font-bold text-slate-800 mb-4">{editingNeed ? 'Edit Product Need' : 'Define New Product Need'}</h3>
           <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Source</label>
@@ -563,8 +579,8 @@ const NeedsView = ({ needs, goals, onAdd, onDelete }) => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">ID (Auto-Generated)</label>
-              <input value={generatedId} readOnly className="w-full p-2 border border-slate-200 bg-slate-50 text-slate-500 rounded-lg font-mono" />
+              <label className="block text-sm font-medium text-slate-700 mb-1">ID {editingNeed ? '' : '(Auto-Generated)'}</label>
+              <input value={editingNeed ? editingNeed.id : generatedId} readOnly className="w-full p-2 border border-slate-200 bg-slate-50 text-slate-500 rounded-lg font-mono" />
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-1">Align with Top Goal</label>
@@ -583,7 +599,7 @@ const NeedsView = ({ needs, goals, onAdd, onDelete }) => {
             </div>
             <div className="md:col-span-2 flex justify-end gap-2">
               <button type="button" onClick={() => { setIsAdding(false); resetForm(); }} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Save Need</button>
+              <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">{editingNeed ? 'Update Need' : 'Save Need'}</button>
             </div>
           </form>
         </Card>
@@ -631,7 +647,10 @@ const NeedsView = ({ needs, goals, onAdd, onDelete }) => {
                  <p className="text-slate-700 mb-3">{need.text}</p>
                  {linkedGoal && <div className="inline-flex items-center gap-2 px-2 py-1 bg-orange-50 border border-orange-100 rounded text-xs text-orange-800"><Flag size={12} /><span>Supports Goal: <strong>{linkedGoal.title}</strong></span></div>}
               </div>
-              <button onClick={() => onDelete(need.id)} className="text-slate-400 hover:text-red-500 p-2"><Trash2 size={18} /></button>
+              <div className="flex gap-2">
+                <button onClick={() => handleEdit(need)} className="text-slate-400 hover:text-blue-600 p-2"><Edit size={18} /></button>
+                <button onClick={() => onDelete(need.id)} className="text-slate-400 hover:text-red-500 p-2"><Trash2 size={18} /></button>
+              </div>
             </Card>
           );
         })}
@@ -640,15 +659,38 @@ const NeedsView = ({ needs, goals, onAdd, onDelete }) => {
   );
 };
 
-const ConOpsView = ({ conops, needs, onAdd, onDelete }) => {
+const ConOpsView = ({ conops, needs, onAdd, onDelete, onEdit }) => {
   const [isAdding, setIsAdding] = useState(false);
+  const [editingConOps, setEditingConOps] = useState(null);
   const [newItem, setNewItem] = useState({ title: '', phase: 'Cruise', text: '', linkedNeedId: '' });
   const generatedId = useMemo(() => getNextId(conops, 'OPS-'), [conops]);
 
+  const handleEdit = (conop) => {
+    setEditingConOps(conop);
+    setNewItem({
+      title: conop.title,
+      phase: conop.phase,
+      text: conop.text,
+      linkedNeedId: conop.linkedNeedId || ''
+    });
+    setIsAdding(true);
+  };
+
   const handleSave = (e) => {
     e.preventDefault();
-    onAdd({ ...newItem, id: generatedId });
+    if (editingConOps) {
+      onEdit({ ...editingConOps, ...newItem });
+      setEditingConOps(null);
+    } else {
+      onAdd({ ...newItem, id: generatedId });
+    }
     setIsAdding(false);
+    setNewItem({ title: '', phase: 'Cruise', text: '', linkedNeedId: '' });
+  };
+
+  const handleCancel = () => {
+    setIsAdding(false);
+    setEditingConOps(null);
     setNewItem({ title: '', phase: 'Cruise', text: '', linkedNeedId: '' });
   };
 
@@ -666,11 +708,11 @@ const ConOpsView = ({ conops, needs, onAdd, onDelete }) => {
 
       {isAdding && (
         <Card className="p-6 border-teal-200 ring-2 ring-teal-50">
-          <h3 className="text-md font-bold text-slate-800 mb-4">Define Operational Scenario</h3>
+          <h3 className="text-md font-bold text-slate-800 mb-4">{editingConOps ? 'Edit Operational Scenario' : 'Define Operational Scenario'}</h3>
           <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">ID (Auto)</label>
-              <input value={generatedId} readOnly className="w-full p-2 border border-slate-200 bg-slate-50 text-slate-500 font-mono rounded-lg" />
+              <label className="block text-sm font-medium text-slate-700 mb-1">ID {editingConOps ? '' : '(Auto)'}</label>
+              <input value={editingConOps ? editingConOps.id : generatedId} readOnly className="w-full p-2 border border-slate-200 bg-slate-50 text-slate-500 font-mono rounded-lg" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Flight Phase</label>
@@ -694,8 +736,8 @@ const ConOpsView = ({ conops, needs, onAdd, onDelete }) => {
               <textarea required value={newItem.text} onChange={e => setNewItem({...newItem, text: e.target.value})} rows={2} className="w-full p-2 border border-slate-300 rounded-lg" />
             </div>
             <div className="md:col-span-2 flex justify-end gap-2">
-              <button type="button" onClick={() => setIsAdding(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">Save Scenario</button>
+              <button type="button" onClick={handleCancel} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+              <button type="submit" className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">{editingConOps ? 'Update Scenario' : 'Save Scenario'}</button>
             </div>
           </form>
         </Card>
@@ -715,7 +757,10 @@ const ConOpsView = ({ conops, needs, onAdd, onDelete }) => {
                  <p className="text-slate-700 mb-2">{item.text}</p>
                  {linkedNeed && <div className="flex items-center gap-2 text-sm text-slate-500 mt-3 pt-3 border-t border-slate-100"><ArrowRight size={14} /><span>Satisfies:</span><span className="bg-purple-50 text-purple-700 px-2 py-0.5 rounded font-mono text-xs">{linkedNeed.id}</span></div>}
               </div>
-              <button onClick={() => onDelete(item.id)} className="text-slate-400 hover:text-red-500 p-2"><Trash2 size={18} /></button>
+              <div className="flex gap-2">
+                <button onClick={() => handleEdit(item)} className="text-slate-400 hover:text-blue-600 p-2"><Edit size={18} /></button>
+                <button onClick={() => onDelete(item.id)} className="text-slate-400 hover:text-red-500 p-2"><Trash2 size={18} /></button>
+              </div>
             </Card>
           );
         })}
@@ -1070,8 +1115,8 @@ function App() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         {activeView === 'dashboard' && <DashboardView stats={stats} requirements={requirements} needs={needs} conops={conops} goals={goals} />}
         {activeView === 'compliance' && <ComplianceView library={REGULATORY_LIBRARY} needs={needs} onAddNeed={(n) => setNeeds(prev => [...prev, n])} />}
-        {activeView === 'needs' && <NeedsView needs={needs} goals={goals} onAdd={(n) => setNeeds(prev => [...prev, n])} onDelete={(id) => setNeeds(prev => prev.filter(n => n.id !== id))} />}
-        {activeView === 'conops' && <ConOpsView conops={conops} needs={needs} onAdd={(c) => setConops(prev => [...prev, c])} onDelete={(id) => setConops(prev => prev.filter(c => c.id !== id))} />}
+        {activeView === 'needs' && <NeedsView needs={needs} goals={goals} onAdd={(n) => setNeeds(prev => [...prev, n])} onEdit={(n) => setNeeds(prev => prev.map(item => item.id === n.id ? n : item))} onDelete={(id) => setNeeds(prev => prev.filter(n => n.id !== id))} />}
+        {activeView === 'conops' && <ConOpsView conops={conops} needs={needs} onAdd={(c) => setConops(prev => [...prev, c])} onEdit={(c) => setConops(prev => prev.map(item => item.id === c.id ? c : item))} onDelete={(id) => setConops(prev => prev.filter(c => c.id !== id))} />}
         {activeView === 'requirements' && <RequirementsView requirements={requirements} needs={needs} conops={conops} onEdit={handleEditRequirement} onDelete={handleDeleteRequirement} onAdd={handleAddRequirement} onStatusChange={handleStatusChange} onLinkArtifact={handleLinkArtifact} />}
         {activeView === 'traceability' && <TraceabilityView requirements={requirements} needs={needs} conops={conops} goals={goals} />}
       </main>
