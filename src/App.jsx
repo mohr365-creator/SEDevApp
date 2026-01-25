@@ -251,6 +251,7 @@ const INITIAL_REQS = [
     lastUpdated: '2023-10-15',
     validationArtifact: null,
     verificationArtifact: null,
+    testLocation: null,
   },
   {
     id: 'SYS-002',
@@ -268,6 +269,7 @@ const INITIAL_REQS = [
     lastUpdated: '2023-10-16',
     validationArtifact: null,
     verificationArtifact: null,
+    testLocation: 'Vehicle',
   },
   {
     id: 'SYS-003',
@@ -285,6 +287,7 @@ const INITIAL_REQS = [
     lastUpdated: '2023-10-18',
     validationArtifact: null,
     verificationArtifact: null,
+    testLocation: null,
   }
 ];
 
@@ -357,27 +360,21 @@ const DashboardView = ({ stats, requirements, needs, conops, goals }) => {
                 <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0 border-4 border-white shadow-sm z-10">
                   <FileText className="text-blue-600" size={20} />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h4 className="font-semibold text-slate-900">System Requirements</h4>
                   <p className="text-sm text-slate-500 mt-1">{requirements.length} Requirements Generated</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center shrink-0 border-4 border-white shadow-sm z-10">
-                  <ShieldCheck className="text-green-600" size={20} />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-slate-900">Validation</h4>
-                  <p className="text-sm text-slate-500 mt-1">{requirements.filter(r => r.validationStatus === 'Validated').length}/{requirements.length} Requirements Validated</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 border-4 border-white shadow-sm z-10">
-                  <CheckCircle className="text-indigo-600" size={20} />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-slate-900">Verification</h4>
-                  <p className="text-sm text-slate-500 mt-1">{requirements.filter(r => r.verificationStatus === 'Verified').length}/{requirements.length} Requirements Verified</p>
+                  <div className="flex gap-4 mt-2">
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <ShieldCheck className="text-green-600" size={14} />
+                      <span className="text-slate-600">Validation:</span>
+                      <span className="font-semibold text-green-700">{requirements.filter(r => r.validationStatus === 'Validated').length}/{requirements.length}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <CheckCircle className="text-indigo-600" size={14} />
+                      <span className="text-slate-600">Verification:</span>
+                      <span className="font-semibold text-indigo-700">{requirements.filter(r => r.verificationStatus === 'Verified').length}/{requirements.length}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -409,6 +406,107 @@ const DashboardView = ({ stats, requirements, needs, conops, goals }) => {
           </div>
         </Card>
       </div>
+
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold text-slate-800 mb-4">Objective Evidence</h3>
+        <div className="space-y-4">
+          {/* Analysis Breakdown */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-slate-600">Analysis</span>
+              <span className="text-xs text-slate-500">
+                {requirements.filter(r => r.validationMethod === 'Analysis' || r.verificationMethod === 'Analysis').length} Total
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-amber-50 p-2 rounded border border-amber-100">
+                <div className="text-xs text-slate-500">Open</div>
+                <div className="text-lg font-bold text-amber-700">
+                  {requirements.filter(r => 
+                    (r.validationMethod === 'Analysis' && r.validationStatus !== 'Validated') ||
+                    (r.verificationMethod === 'Analysis' && r.verificationStatus !== 'Verified')
+                  ).length}
+                </div>
+              </div>
+              <div className="bg-green-50 p-2 rounded border border-green-100">
+                <div className="text-xs text-slate-500">Completed</div>
+                <div className="text-lg font-bold text-green-700">
+                  {requirements.filter(r => 
+                    (r.validationMethod === 'Analysis' && r.validationStatus === 'Validated') ||
+                    (r.verificationMethod === 'Analysis' && r.verificationStatus === 'Verified')
+                  ).length}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Testing Breakdown */}
+          <div className="border-t border-slate-200 pt-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-slate-600">Testing</span>
+              <span className="text-xs font-bold text-slate-500">
+                {requirements.filter(r => r.validationMethod === 'Test' || r.verificationMethod === 'Test').length} Total
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-blue-50 p-2 rounded border border-blue-100">
+                <div className="text-xs text-slate-500">Supplier</div>
+                <div className="text-lg font-bold text-blue-700">
+                  {requirements.filter(r => 
+                    (r.validationMethod === 'Test' || r.verificationMethod === 'Test') && 
+                    r.testLocation === 'Supplier'
+                  ).length}
+                </div>
+              </div>
+              <div className="bg-purple-50 p-2 rounded border border-purple-100">
+                <div className="text-xs text-slate-500">Lab</div>
+                <div className="text-lg font-bold text-purple-700">
+                  {requirements.filter(r => 
+                    (r.validationMethod === 'Test' || r.verificationMethod === 'Test') && 
+                    r.testLocation === 'Lab'
+                  ).length}
+                </div>
+              </div>
+              <div className="bg-teal-50 p-2 rounded border border-teal-100">
+                <div className="text-xs text-slate-500">Vehicle</div>
+                <div className="text-lg font-bold text-teal-700">
+                  {requirements.filter(r => 
+                    (r.validationMethod === 'Test' || r.verificationMethod === 'Test') && 
+                    r.testLocation === 'Vehicle'
+                  ).length}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Other Methods */}
+          <div className="border-t border-slate-200 pt-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-slate-600">Other Methods</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                <div className="text-xs text-slate-500">Inspection</div>
+                <div className="text-lg font-bold text-slate-700">
+                  {requirements.filter(r => r.validationMethod === 'Inspection' || r.verificationMethod === 'Inspection').length}
+                </div>
+              </div>
+              <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                <div className="text-xs text-slate-500">Review</div>
+                <div className="text-lg font-bold text-slate-700">
+                  {requirements.filter(r => r.validationMethod === 'Review' || r.verificationMethod === 'Review').length}
+                </div>
+              </div>
+              <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                <div className="text-xs text-slate-500">Demo</div>
+                <div className="text-lg font-bold text-slate-700">
+                  {requirements.filter(r => r.validationMethod === 'Demonstration' || r.verificationMethod === 'Demonstration').length}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 };
@@ -880,63 +978,40 @@ const RequirementsView = ({ requirements, needs, conops, onEdit, onDelete, onAdd
                   </div>
                 </div>
 
-                {/* Validation Status with Link */}
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => onNavigate('validation')} 
-                    className="text-green-600 hover:text-green-700 hover:underline cursor-pointer transition-colors font-medium text-sm flex items-center gap-1"
-                    title="Go to Validation view to add evidence and details"
-                  >
-                    <ShieldCheck size={14} />
-                    Validation:
-                  </button>
-                  <div className="relative">
-                    <select
-                      value={req.validationStatus}
-                      onChange={(e) => onStatusChange(req.id, 'validationStatus', e.target.value)}
-                      className={`appearance-none pl-2 pr-6 py-0.5 rounded text-xs font-medium border cursor-pointer focus:outline-none focus:ring-1 focus:ring-green-500 ${
-                        req.validationStatus === 'Validated' ? 'bg-green-100 text-green-800 border-green-200' :
-                        req.validationStatus === 'In Review' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                        'bg-slate-100 text-slate-800 border-slate-200'
-                      }`}
-                    >
-                      <option value="Draft">Draft</option>
-                      <option value="In Review">In Review</option>
-                      <option value="Validated">Validated</option>
-                    </select>
-                    <ChevronDown size={12} className="absolute right-1 top-1.5 pointer-events-none text-current opacity-70" />
-                  </div>
-                </div>
+                {/* Validation Status - Read Only with Link */}
+                <button 
+                  onClick={() => onNavigate('validation')} 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-green-200 bg-green-50 hover:bg-green-100 transition-colors cursor-pointer"
+                  title="Click to go to Validation page to update status"
+                >
+                  <ShieldCheck size={14} className="text-green-600" />
+                  <span className="text-xs font-medium text-green-700">Validation:</span>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                    req.validationStatus === 'Validated' ? 'bg-green-200 text-green-900' :
+                    req.validationStatus === 'In Review' ? 'bg-yellow-200 text-yellow-900' :
+                    'bg-slate-200 text-slate-700'
+                  }`}>
+                    {req.validationStatus}
+                  </span>
+                </button>
 
-                {/* Verification Status with Link */}
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => onNavigate('verification')} 
-                    className="text-indigo-600 hover:text-indigo-700 hover:underline cursor-pointer transition-colors font-medium text-sm flex items-center gap-1"
-                    title="Go to Verification view to add evidence and details"
-                  >
-                    <CheckCircle size={14} />
-                    Verification:
-                  </button>
-                  <div className="relative">
-                    <select
-                      value={req.verificationStatus}
-                      onChange={(e) => onStatusChange(req.id, 'verificationStatus', e.target.value)}
-                      className={`appearance-none pl-2 pr-6 py-0.5 rounded text-xs font-medium border cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
-                        req.verificationStatus === 'Verified' ? 'bg-indigo-100 text-indigo-800 border-indigo-200' :
-                        req.verificationStatus === 'In Progress' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                        req.verificationStatus === 'Failed' ? 'bg-red-100 text-red-800 border-red-200' :
-                        'bg-slate-100 text-slate-800 border-slate-200'
-                      }`}
-                    >
-                      <option value="Open">Open</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Verified">Verified</option>
-                      <option value="Failed">Failed</option>
-                    </select>
-                    <ChevronDown size={12} className="absolute right-1 top-1.5 pointer-events-none text-current opacity-70" />
-                  </div>
-                </div>
+                {/* Verification Status - Read Only with Link */}
+                <button 
+                  onClick={() => onNavigate('verification')} 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors cursor-pointer"
+                  title="Click to go to Verification page to update status"
+                >
+                  <CheckCircle size={14} className="text-indigo-600" />
+                  <span className="text-xs font-medium text-indigo-700">Verification:</span>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                    req.verificationStatus === 'Verified' ? 'bg-indigo-200 text-indigo-900' :
+                    req.verificationStatus === 'In Progress' ? 'bg-yellow-200 text-yellow-900' :
+                    req.verificationStatus === 'Failed' ? 'bg-red-200 text-red-900' :
+                    'bg-slate-200 text-slate-700'
+                  }`}>
+                    {req.verificationStatus}
+                  </span>
+                </button>
               </div>
             </div>
           </Card>
@@ -1070,7 +1145,7 @@ const ValidationView = ({ requirements, onStatusChange, onLinkArtifact }) => {
               
               <p className="text-slate-700 leading-relaxed mb-4">{req.text}</p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
                   <label className="text-xs font-semibold text-slate-500 block mb-1">Validation Method</label>
                   <div className="relative">
@@ -1090,6 +1165,24 @@ const ValidationView = ({ requirements, onStatusChange, onLinkArtifact }) => {
                     <ChevronDown size={12} className="absolute right-2 top-2 pointer-events-none text-slate-500" />
                   </div>
                 </div>
+                {(req.validationMethod === 'Test') && (
+                  <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <label className="text-xs font-semibold text-blue-700 block mb-1">Test Location</label>
+                    <div className="relative">
+                      <select
+                        value={req.testLocation || 'Not Specified'}
+                        onChange={(e) => onStatusChange(req.id, 'testLocation', e.target.value)}
+                        className="w-full appearance-none pl-2 pr-6 py-1.5 rounded text-sm font-medium border border-blue-300 bg-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      >
+                        <option value="Not Specified">Not Specified</option>
+                        <option value="Supplier">Supplier</option>
+                        <option value="Lab">Lab</option>
+                        <option value="Vehicle">Vehicle</option>
+                      </select>
+                      <ChevronDown size={12} className="absolute right-2 top-2 pointer-events-none text-blue-500" />
+                    </div>
+                  </div>
+                )}
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
                   <span className="text-xs font-semibold text-slate-500">Criticality</span>
                   <p className="text-sm text-slate-900 font-medium mt-1">{req.criticality || 'Not specified'}</p>
@@ -1192,7 +1285,7 @@ const VerificationView = ({ requirements, onStatusChange, onLinkArtifact }) => {
               
               <p className="text-slate-700 leading-relaxed mb-3">{req.text}</p>
               
-              <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="grid grid-cols-3 gap-3 mb-4">
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
                   <label className="text-xs font-semibold text-slate-500 block mb-1">Verification Method</label>
                   <div className="relative">
@@ -1212,6 +1305,24 @@ const VerificationView = ({ requirements, onStatusChange, onLinkArtifact }) => {
                     <ChevronDown size={12} className="absolute right-2 top-2 pointer-events-none text-slate-500" />
                   </div>
                 </div>
+                {(req.verificationMethod === 'Test') && (
+                  <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <label className="text-xs font-semibold text-blue-700 block mb-1">Test Location</label>
+                    <div className="relative">
+                      <select
+                        value={req.testLocation || 'Not Specified'}
+                        onChange={(e) => onStatusChange(req.id, 'testLocation', e.target.value)}
+                        className="w-full appearance-none pl-2 pr-6 py-1.5 rounded text-sm font-medium border border-blue-300 bg-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      >
+                        <option value="Not Specified">Not Specified</option>
+                        <option value="Supplier">Supplier</option>
+                        <option value="Lab">Lab</option>
+                        <option value="Vehicle">Vehicle</option>
+                      </select>
+                      <ChevronDown size={12} className="absolute right-2 top-2 pointer-events-none text-blue-500" />
+                    </div>
+                  </div>
+                )}
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
                   <span className="text-xs font-semibold text-slate-500">Criticality</span>
                   <p className="text-sm text-slate-900 font-medium mt-1">{req.criticality || 'Not specified'}</p>
