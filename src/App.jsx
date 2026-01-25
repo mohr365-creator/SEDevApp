@@ -242,6 +242,7 @@ const INITIAL_REQS = [
     type: 'Performance',
     criticality: 'DAL B',
     verificationMethod: 'Analysis',
+    validationMethod: 'Analysis',
     validationStatus: 'Validated',
     verificationStatus: 'Verified',
     parentId: null,
@@ -258,6 +259,7 @@ const INITIAL_REQS = [
     type: 'Safety',
     criticality: 'DAL A',
     verificationMethod: 'Test',
+    validationMethod: 'Review',
     validationStatus: 'Validated',
     verificationStatus: 'Open',
     parentId: null,
@@ -274,6 +276,7 @@ const INITIAL_REQS = [
     type: 'Functional',
     criticality: 'DAL A',
     verificationMethod: 'Inspection',
+    validationMethod: 'Inspection',
     validationStatus: 'Draft',
     verificationStatus: 'Open',
     parentId: 'SYS-002',
@@ -357,6 +360,24 @@ const DashboardView = ({ stats, requirements, needs, conops, goals }) => {
                 <div>
                   <h4 className="font-semibold text-slate-900">System Requirements</h4>
                   <p className="text-sm text-slate-500 mt-1">{requirements.length} Requirements Generated</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center shrink-0 border-4 border-white shadow-sm z-10">
+                  <ShieldCheck className="text-green-600" size={20} />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-slate-900">Validation</h4>
+                  <p className="text-sm text-slate-500 mt-1">{requirements.filter(r => r.validationStatus === 'Validated').length}/{requirements.length} Requirements Validated</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 border-4 border-white shadow-sm z-10">
+                  <CheckCircle className="text-indigo-600" size={20} />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-slate-900">Verification</h4>
+                  <p className="text-sm text-slate-500 mt-1">{requirements.filter(r => r.verificationStatus === 'Verified').length}/{requirements.length} Requirements Verified</p>
                 </div>
               </div>
             </div>
@@ -827,6 +848,31 @@ const RequirementsView = ({ requirements, needs, conops, onEdit, onDelete, onAdd
                    {req.parentId && <div className="flex items-center gap-1 text-blue-700"><LinkIcon size={14} /><span className="font-mono text-xs">{req.parentId}</span></div>}
                 </div>
 
+                {/* Criticality Dropdown */}
+                <div className="flex items-center gap-2 relative group">
+                  <span className="text-slate-500">DAL:</span>
+                  <div className="relative">
+                    <select
+                      value={req.criticality || 'DAL E'}
+                      onChange={(e) => onStatusChange(req.id, 'criticality', e.target.value)}
+                      className={`appearance-none pl-2 pr-6 py-0.5 rounded text-xs font-medium border cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                        req.criticality === 'DAL A' ? 'bg-red-100 text-red-800 border-red-200' :
+                        req.criticality === 'DAL B' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                        req.criticality === 'DAL C' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                        req.criticality === 'DAL D' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                        'bg-slate-100 text-slate-800 border-slate-200'
+                      }`}
+                    >
+                      <option value="DAL A">DAL A</option>
+                      <option value="DAL B">DAL B</option>
+                      <option value="DAL C">DAL C</option>
+                      <option value="DAL D">DAL D</option>
+                      <option value="DAL E">DAL E</option>
+                    </select>
+                    <ChevronDown size={12} className="absolute right-1 top-1.5 pointer-events-none text-current opacity-70" />
+                  </div>
+                </div>
+
                 {/* Validation Dropdown */}
                 <div className="flex items-center gap-2 relative group">
                   <span className="text-slate-500">Val:</span>
@@ -1005,6 +1051,32 @@ const ValidationView = ({ requirements, onStatusChange, onLinkArtifact }) => {
               
               <p className="text-slate-700 leading-relaxed mb-4">{req.text}</p>
               
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <label className="text-xs font-semibold text-slate-500 block mb-1">Validation Method</label>
+                  <div className="relative">
+                    <select
+                      value={req.validationMethod || 'Not Specified'}
+                      onChange={(e) => onStatusChange(req.id, 'validationMethod', e.target.value)}
+                      className="w-full appearance-none pl-2 pr-6 py-1.5 rounded text-sm font-medium border border-slate-300 bg-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-green-500"
+                    >
+                      <option value="Not Specified">Not Specified</option>
+                      <option value="Analysis">Analysis</option>
+                      <option value="Inspection">Inspection</option>
+                      <option value="Demonstration">Demonstration</option>
+                      <option value="Test">Test</option>
+                      <option value="Review">Review</option>
+                      <option value="Simulation">Simulation</option>
+                    </select>
+                    <ChevronDown size={12} className="absolute right-2 top-2 pointer-events-none text-slate-500" />
+                  </div>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <span className="text-xs font-semibold text-slate-500">Criticality</span>
+                  <p className="text-sm text-slate-900 font-medium mt-1">{req.criticality || 'Not specified'}</p>
+                </div>
+              </div>
+              
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-semibold text-slate-700">Validation Evidence</span>
@@ -1103,8 +1175,23 @@ const VerificationView = ({ requirements, onStatusChange, onLinkArtifact }) => {
               
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                  <span className="text-xs font-semibold text-slate-500">Method</span>
-                  <p className="text-sm text-slate-900 font-medium mt-1">{req.verificationMethod || 'Not specified'}</p>
+                  <label className="text-xs font-semibold text-slate-500 block mb-1">Verification Method</label>
+                  <div className="relative">
+                    <select
+                      value={req.verificationMethod || 'Not Specified'}
+                      onChange={(e) => onStatusChange(req.id, 'verificationMethod', e.target.value)}
+                      className="w-full appearance-none pl-2 pr-6 py-1.5 rounded text-sm font-medium border border-slate-300 bg-white cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    >
+                      <option value="Not Specified">Not Specified</option>
+                      <option value="Test">Test</option>
+                      <option value="Analysis">Analysis</option>
+                      <option value="Inspection">Inspection</option>
+                      <option value="Demonstration">Demonstration</option>
+                      <option value="Simulation">Simulation</option>
+                      <option value="Review">Review</option>
+                    </select>
+                    <ChevronDown size={12} className="absolute right-2 top-2 pointer-events-none text-slate-500" />
+                  </div>
                 </div>
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
                   <span className="text-xs font-semibold text-slate-500">Criticality</span>
@@ -1147,7 +1234,7 @@ const VerificationView = ({ requirements, onStatusChange, onLinkArtifact }) => {
 const RequirementModal = ({ isOpen, onClose, onSave, initialData, existingRequirements, needs, conops }) => {
   const [formData, setFormData] = useState({
     id: '', title: '', text: '', type: 'Functional', criticality: 'DAL C',
-    verificationMethod: 'Test', validationStatus: 'Draft', verificationStatus: 'Open',
+    verificationMethod: 'Test', validationMethod: 'Review', validationStatus: 'Draft', verificationStatus: 'Open',
     parentId: '', sourceNeedId: '', sourceConOpsId: ''
   });
 
