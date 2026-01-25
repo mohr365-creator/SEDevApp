@@ -23,7 +23,8 @@ import {
   Scale,
   Filter,
   Paperclip,
-  ChevronDown
+  ChevronDown,
+  Menu
 } from 'lucide-react';
 
 // ==========================================
@@ -717,7 +718,17 @@ const ConOpsView = ({ conops, needs, onAdd, onDelete, onEdit }) => {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Flight Phase</label>
               <select value={newItem.phase} onChange={e => setNewItem({...newItem, phase: e.target.value})} className="w-full p-2 border border-slate-300 rounded-lg">
-                <option>Taxi</option><option>Takeoff</option><option>Climb</option><option>Cruise</option><option>Descent</option><option>Landing</option><option>Maintenance</option>
+                <option>Standing</option>
+                <option>Engine Start</option>
+                <option>Taxi</option>
+                <option>Takeoff</option>
+                <option>Climb</option>
+                <option>Cruise</option>
+                <option>Descent</option>
+                <option>Arrival</option>
+                <option>Landing</option>
+                <option>Engine Shutdown</option>
+                <option>Maintenance</option>
               </select>
             </div>
             <div>
@@ -928,6 +939,207 @@ const TraceabilityView = ({ requirements, needs, conops, goals }) => {
   );
 };
 
+const ValidationView = ({ requirements, onStatusChange, onLinkArtifact }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const filteredReqs = requirements.filter(req => 
+    req.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    req.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    req.id.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <div className="flex items-center gap-3 mb-2">
+          <ShieldCheck className="text-green-600" size={28} />
+          <h2 className="text-2xl font-bold text-slate-900">5. Validation</h2>
+        </div>
+        <p className="text-slate-600 italic">"Are we building the right thing?"</p>
+        <p className="text-sm text-slate-500 mt-2">
+          Validate that requirements correctly address stakeholder needs and intended use.
+        </p>
+      </div>
+
+      <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <div>
+          <h3 className="text-md font-semibold text-slate-900">Validation Activities</h3>
+          <p className="text-xs text-slate-500">Provide objective evidence that requirements are correct</p>
+        </div>
+        <input 
+          type="text" 
+          className="pl-3 pr-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" 
+          placeholder="Search requirements..." 
+          value={searchTerm} 
+          onChange={(e) => setSearchTerm(e.target.value)} 
+        />
+      </div>
+
+      <div className="space-y-4">
+        {filteredReqs.map(req => (
+          <Card key={req.id} className="p-0 overflow-hidden hover:shadow-md transition-shadow border-l-4 border-l-green-500">
+            <div className="p-5">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-sm font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded">{req.id}</span>
+                  <h4 className="text-lg font-semibold text-slate-900">{req.title}</h4>
+                  <Badge color={req.type === 'Safety' ? 'red' : 'blue'}>{req.type}</Badge>
+                </div>
+                <div className="relative">
+                  <select
+                    value={req.validationStatus}
+                    onChange={(e) => onStatusChange(req.id, 'validationStatus', e.target.value)}
+                    className={`appearance-none pl-3 pr-8 py-1.5 rounded-lg text-sm font-medium border cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                      req.validationStatus === 'Validated' ? 'bg-green-100 text-green-800 border-green-200' :
+                      req.validationStatus === 'In Review' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                      'bg-slate-100 text-slate-800 border-slate-200'
+                    }`}
+                  >
+                    <option value="Draft">Draft</option>
+                    <option value="In Review">In Review</option>
+                    <option value="Validated">Validated</option>
+                  </select>
+                  <ChevronDown size={14} className="absolute right-2 top-2 pointer-events-none text-current opacity-70" />
+                </div>
+              </div>
+              
+              <p className="text-slate-700 leading-relaxed mb-4">{req.text}</p>
+              
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold text-slate-700">Validation Evidence</span>
+                  <button 
+                    onClick={() => onLinkArtifact(req.id, 'validation')} 
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors"
+                  >
+                    <Paperclip size={14} />
+                    {req.validationArtifact ? 'Update Evidence' : 'Link Evidence'}
+                  </button>
+                </div>
+                {req.validationArtifact ? (
+                  <div className="flex items-center gap-2 text-sm text-slate-600 bg-white p-2 rounded border border-slate-200">
+                    <CheckCircle size={16} className="text-green-600" />
+                    <span className="font-mono text-xs">{req.validationArtifact}</span>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 italic">No validation evidence linked</p>
+                )}
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const VerificationView = ({ requirements, onStatusChange, onLinkArtifact }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const filteredReqs = requirements.filter(req => 
+    req.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    req.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    req.id.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <div className="flex items-center gap-3 mb-2">
+          <CheckCircle className="text-indigo-600" size={28} />
+          <h2 className="text-2xl font-bold text-slate-900">6. Verification</h2>
+        </div>
+        <p className="text-slate-600 italic">"Did we build the thing right?"</p>
+        <p className="text-sm text-slate-500 mt-2">
+          Verify that the implementation meets requirements through test, analysis, inspection, or demonstration.
+        </p>
+      </div>
+
+      <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <div>
+          <h3 className="text-md font-semibold text-slate-900">Verification Activities</h3>
+          <p className="text-xs text-slate-500">Provide objective evidence that requirements are implemented correctly</p>
+        </div>
+        <input 
+          type="text" 
+          className="pl-3 pr-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" 
+          placeholder="Search requirements..." 
+          value={searchTerm} 
+          onChange={(e) => setSearchTerm(e.target.value)} 
+        />
+      </div>
+
+      <div className="space-y-4">
+        {filteredReqs.map(req => (
+          <Card key={req.id} className="p-0 overflow-hidden hover:shadow-md transition-shadow border-l-4 border-l-indigo-500">
+            <div className="p-5">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-sm font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded">{req.id}</span>
+                  <h4 className="text-lg font-semibold text-slate-900">{req.title}</h4>
+                  <Badge color={req.type === 'Safety' ? 'red' : 'blue'}>{req.type}</Badge>
+                </div>
+                <div className="relative">
+                  <select
+                    value={req.verificationStatus}
+                    onChange={(e) => onStatusChange(req.id, 'verificationStatus', e.target.value)}
+                    className={`appearance-none pl-3 pr-8 py-1.5 rounded-lg text-sm font-medium border cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                      req.verificationStatus === 'Verified' ? 'bg-indigo-100 text-indigo-800 border-indigo-200' :
+                      req.verificationStatus === 'In Progress' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                      req.verificationStatus === 'Failed' ? 'bg-red-100 text-red-800 border-red-200' :
+                      'bg-slate-100 text-slate-800 border-slate-200'
+                    }`}
+                  >
+                    <option value="Open">Open</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Verified">Verified</option>
+                    <option value="Failed">Failed</option>
+                  </select>
+                  <ChevronDown size={14} className="absolute right-2 top-2 pointer-events-none text-current opacity-70" />
+                </div>
+              </div>
+              
+              <p className="text-slate-700 leading-relaxed mb-3">{req.text}</p>
+              
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <span className="text-xs font-semibold text-slate-500">Method</span>
+                  <p className="text-sm text-slate-900 font-medium mt-1">{req.verificationMethod || 'Not specified'}</p>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <span className="text-xs font-semibold text-slate-500">Criticality</span>
+                  <p className="text-sm text-slate-900 font-medium mt-1">{req.criticality || 'Not specified'}</p>
+                </div>
+              </div>
+              
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold text-slate-700">Verification Evidence</span>
+                  <button 
+                    onClick={() => onLinkArtifact(req.id, 'verification')} 
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-colors"
+                  >
+                    <Paperclip size={14} />
+                    {req.verificationArtifact ? 'Update Evidence' : 'Link Evidence'}
+                  </button>
+                </div>
+                {req.verificationArtifact ? (
+                  <div className="flex items-center gap-2 text-sm text-slate-600 bg-white p-2 rounded border border-slate-200">
+                    <CheckCircle size={16} className="text-indigo-600" />
+                    <span className="font-mono text-xs">{req.verificationArtifact}</span>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 italic">No verification evidence linked</p>
+                )}
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // ==========================================
 // 4. MODALS & FORMS
 // ==========================================
@@ -1036,6 +1248,7 @@ const RequirementModal = ({ isOpen, onClose, onSave, initialData, existingRequir
 
 function App() {
   const [activeView, setActiveView] = useState('dashboard');
+  const [menuOpen, setMenuOpen] = useState(false);
   const [goals] = useState(INITIAL_GOALS);
   const [needs, setNeeds] = useState(INITIAL_NEEDS);
   const [conops, setConops] = useState(INITIAL_CONOPS);
@@ -1049,6 +1262,15 @@ function App() {
     verified: requirements.filter(r => r.verificationStatus === 'Verified').length,
     safetyCritical: requirements.filter(r => r.type === 'Safety' || r.criticality === 'DAL A').length
   }), [requirements]);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setMenuOpen(false);
+    if (menuOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [menuOpen]);
 
   const handleAddRequirement = () => {
     setEditingReq(null);
@@ -1100,13 +1322,97 @@ function App() {
                 <p className="text-slate-400 text-xs">Requirements Management Suite</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2 overflow-x-auto">
-              <NavButton active={activeView === 'dashboard'} onClick={() => setActiveView('dashboard')} icon={<LayoutDashboard size={18} />} label="Dashboard" />
-              <NavButton active={activeView === 'compliance'} onClick={() => setActiveView('compliance')} icon={<Scale size={18} />} label="Compliance" />
-              <NavButton active={activeView === 'needs'} onClick={() => setActiveView('needs')} icon={<Target size={18} />} label="Needs" />
-              <NavButton active={activeView === 'conops'} onClick={() => setActiveView('conops')} icon={<Compass size={18} />} label="ConOps" />
-              <NavButton active={activeView === 'requirements'} onClick={() => setActiveView('requirements')} icon={<FileText size={18} />} label="Requirements" />
-              <NavButton active={activeView === 'traceability'} onClick={() => setActiveView('traceability')} icon={<LinkIcon size={18} />} label="Traceability" />
+            <div className="flex items-center space-x-2">
+              {/* Dashboard Button */}
+              <NavButton 
+                active={activeView === 'dashboard'} 
+                onClick={() => {
+                  setActiveView('dashboard');
+                  setMenuOpen(false);
+                }} 
+                icon={<LayoutDashboard size={18} />} 
+                label="Dashboard" 
+              />
+              
+              {/* Dropdown Menu */}
+              <div className="relative">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpen(!menuOpen);
+                  }}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-colors bg-slate-800 text-white hover:bg-slate-700"
+                >
+                  <Menu size={18} />
+                  <span>Menu</span>
+                  <ChevronDown size={16} className={`transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {/* Dropdown Content */}
+                {menuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-slate-200 py-2 z-50">
+                    <button
+                      onClick={() => { setActiveView('compliance'); setMenuOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-3 hover:bg-slate-50 transition-colors ${activeView === 'compliance' ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-700'}`}
+                    >
+                      <Scale size={16} className="text-slate-500" />
+                      <span>Compliance Library</span>
+                    </button>
+                    
+                    <div className="border-t border-slate-100 my-2"></div>
+                    
+                    <button
+                      onClick={() => { setActiveView('needs'); setMenuOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-3 hover:bg-slate-50 transition-colors ${activeView === 'needs' ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-700'}`}
+                    >
+                      <Target size={16} className="text-purple-500" />
+                      <span>1. Product Needs</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => { setActiveView('conops'); setMenuOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-3 hover:bg-slate-50 transition-colors ${activeView === 'conops' ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-700'}`}
+                    >
+                      <Compass size={16} className="text-teal-500" />
+                      <span>2. Concept of Operations</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => { setActiveView('requirements'); setMenuOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-3 hover:bg-slate-50 transition-colors ${activeView === 'requirements' ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-700'}`}
+                    >
+                      <FileText size={16} className="text-blue-500" />
+                      <span>3. Requirements</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => { setActiveView('traceability'); setMenuOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-3 hover:bg-slate-50 transition-colors ${activeView === 'traceability' ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-700'}`}
+                    >
+                      <LinkIcon size={16} className="text-slate-500" />
+                      <span>4. Traceability Matrix</span>
+                    </button>
+                    
+                    <div className="border-t border-slate-100 my-2"></div>
+                    
+                    <button
+                      onClick={() => { setActiveView('validation'); setMenuOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-3 hover:bg-slate-50 transition-colors ${activeView === 'validation' ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-700'}`}
+                    >
+                      <ShieldCheck size={16} className="text-green-500" />
+                      <span>5. Validation</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => { setActiveView('verification'); setMenuOpen(false); }}
+                      className={`w-full text-left px-4 py-2 text-sm flex items-center gap-3 hover:bg-slate-50 transition-colors ${activeView === 'verification' ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-700'}`}
+                    >
+                      <CheckCircle size={16} className="text-indigo-500" />
+                      <span>6. Verification</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -1119,6 +1425,8 @@ function App() {
         {activeView === 'conops' && <ConOpsView conops={conops} needs={needs} onAdd={(c) => setConops(prev => [...prev, c])} onEdit={(c) => setConops(prev => prev.map(item => item.id === c.id ? c : item))} onDelete={(id) => setConops(prev => prev.filter(c => c.id !== id))} />}
         {activeView === 'requirements' && <RequirementsView requirements={requirements} needs={needs} conops={conops} onEdit={handleEditRequirement} onDelete={handleDeleteRequirement} onAdd={handleAddRequirement} onStatusChange={handleStatusChange} onLinkArtifact={handleLinkArtifact} />}
         {activeView === 'traceability' && <TraceabilityView requirements={requirements} needs={needs} conops={conops} goals={goals} />}
+        {activeView === 'validation' && <ValidationView requirements={requirements} onStatusChange={handleStatusChange} onLinkArtifact={handleLinkArtifact} />}
+        {activeView === 'verification' && <VerificationView requirements={requirements} onStatusChange={handleStatusChange} onLinkArtifact={handleLinkArtifact} />}
       </main>
 
       <RequirementModal 
