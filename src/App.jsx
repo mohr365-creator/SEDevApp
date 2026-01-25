@@ -801,7 +801,7 @@ const ConOpsView = ({ conops, needs, onAdd, onDelete, onEdit }) => {
   );
 };
 
-const RequirementsView = ({ requirements, needs, conops, onEdit, onDelete, onAdd, onStatusChange, onLinkArtifact }) => {
+const RequirementsView = ({ requirements, needs, conops, onEdit, onDelete, onAdd, onStatusChange, onLinkArtifact, onNavigate }) => {
   const [searchTerm, setSearchTerm] = useState('');
   
   const filteredReqs = requirements.filter(req => 
@@ -828,10 +828,17 @@ const RequirementsView = ({ requirements, needs, conops, onEdit, onDelete, onAdd
           <Card key={req.id} className="p-0 overflow-hidden hover:shadow-md transition-shadow border-l-4 border-l-blue-500">
             <div className="p-5">
               <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                   <span className="font-mono text-sm font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded">{req.id}</span>
                   <h4 className="text-lg font-semibold text-slate-900">{req.title}</h4>
                   <Badge color={req.type === 'Safety' ? 'red' : 'blue'}>{req.type}</Badge>
+                  <Badge color={
+                    req.criticality === 'DAL A' ? 'red' :
+                    req.criticality === 'DAL B' ? 'orange' :
+                    req.criticality === 'DAL C' ? 'yellow' :
+                    req.criticality === 'DAL D' ? 'blue' :
+                    'gray'
+                  }>{req.criticality || 'DAL E'}</Badge>
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={() => onEdit(req)} className="p-1 text-slate-400 hover:text-blue-600 transition-colors"><Edit size={18} /></button>
@@ -873,16 +880,23 @@ const RequirementsView = ({ requirements, needs, conops, onEdit, onDelete, onAdd
                   </div>
                 </div>
 
-                {/* Validation Dropdown */}
-                <div className="flex items-center gap-2 relative group">
-                  <span className="text-slate-500">Val:</span>
+                {/* Validation Status with Link */}
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => onNavigate('validation')} 
+                    className="text-green-600 hover:text-green-700 hover:underline cursor-pointer transition-colors font-medium text-sm flex items-center gap-1"
+                    title="Go to Validation view to add evidence and details"
+                  >
+                    <ShieldCheck size={14} />
+                    Validation:
+                  </button>
                   <div className="relative">
                     <select
                       value={req.validationStatus}
                       onChange={(e) => onStatusChange(req.id, 'validationStatus', e.target.value)}
-                      className={`appearance-none pl-2 pr-6 py-0.5 rounded text-xs font-medium border cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                        req.validationStatus === 'Validated' ? 'bg-blue-100 text-blue-800 border-blue-200' :
-                        req.validationStatus === 'In Review' ? 'bg-green-100 text-green-800 border-green-200' :
+                      className={`appearance-none pl-2 pr-6 py-0.5 rounded text-xs font-medium border cursor-pointer focus:outline-none focus:ring-1 focus:ring-green-500 ${
+                        req.validationStatus === 'Validated' ? 'bg-green-100 text-green-800 border-green-200' :
+                        req.validationStatus === 'In Review' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
                         'bg-slate-100 text-slate-800 border-slate-200'
                       }`}
                     >
@@ -892,19 +906,25 @@ const RequirementsView = ({ requirements, needs, conops, onEdit, onDelete, onAdd
                     </select>
                     <ChevronDown size={12} className="absolute right-1 top-1.5 pointer-events-none text-current opacity-70" />
                   </div>
-                  <button onClick={() => onLinkArtifact(req.id, 'validation')} className={`p-1 rounded hover:bg-slate-100 transition-colors ${req.validationArtifact ? 'text-blue-600' : 'text-slate-300 hover:text-slate-500'}`} title={req.validationArtifact ? `Linked: ${req.validationArtifact}` : "Link Validation Artifact"}><Paperclip size={14} /></button>
                 </div>
 
-                {/* Verification Dropdown */}
-                <div className="flex items-center gap-2 relative group">
-                  <span className="text-slate-500">Ver:</span>
+                {/* Verification Status with Link */}
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => onNavigate('verification')} 
+                    className="text-indigo-600 hover:text-indigo-700 hover:underline cursor-pointer transition-colors font-medium text-sm flex items-center gap-1"
+                    title="Go to Verification view to add evidence and details"
+                  >
+                    <CheckCircle size={14} />
+                    Verification:
+                  </button>
                   <div className="relative">
                     <select
                       value={req.verificationStatus}
                       onChange={(e) => onStatusChange(req.id, 'verificationStatus', e.target.value)}
-                      className={`appearance-none pl-2 pr-6 py-0.5 rounded text-xs font-medium border cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                        req.verificationStatus === 'Verified' ? 'bg-blue-100 text-blue-800 border-blue-200' :
-                        req.verificationStatus === 'In Progress' ? 'bg-green-100 text-green-800 border-green-200' :
+                      className={`appearance-none pl-2 pr-6 py-0.5 rounded text-xs font-medium border cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 ${
+                        req.verificationStatus === 'Verified' ? 'bg-indigo-100 text-indigo-800 border-indigo-200' :
+                        req.verificationStatus === 'In Progress' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
                         req.verificationStatus === 'Failed' ? 'bg-red-100 text-red-800 border-red-200' :
                         'bg-slate-100 text-slate-800 border-slate-200'
                       }`}
@@ -916,7 +936,6 @@ const RequirementsView = ({ requirements, needs, conops, onEdit, onDelete, onAdd
                     </select>
                     <ChevronDown size={12} className="absolute right-1 top-1.5 pointer-events-none text-current opacity-70" />
                   </div>
-                  <button onClick={() => onLinkArtifact(req.id, 'verification')} className={`p-1 rounded hover:bg-slate-100 transition-colors ${req.verificationArtifact ? 'text-blue-600' : 'text-slate-300 hover:text-slate-500'}`} title={req.verificationArtifact ? `Linked: ${req.verificationArtifact}` : "Link Verification Artifact"}><Paperclip size={14} /></button>
                 </div>
               </div>
             </div>
@@ -1510,7 +1529,7 @@ function App() {
         {activeView === 'compliance' && <ComplianceView library={REGULATORY_LIBRARY} needs={needs} onAddNeed={(n) => setNeeds(prev => [...prev, n])} />}
         {activeView === 'needs' && <NeedsView needs={needs} goals={goals} onAdd={(n) => setNeeds(prev => [...prev, n])} onEdit={(n) => setNeeds(prev => prev.map(item => item.id === n.id ? n : item))} onDelete={(id) => setNeeds(prev => prev.filter(n => n.id !== id))} />}
         {activeView === 'conops' && <ConOpsView conops={conops} needs={needs} onAdd={(c) => setConops(prev => [...prev, c])} onEdit={(c) => setConops(prev => prev.map(item => item.id === c.id ? c : item))} onDelete={(id) => setConops(prev => prev.filter(c => c.id !== id))} />}
-        {activeView === 'requirements' && <RequirementsView requirements={requirements} needs={needs} conops={conops} onEdit={handleEditRequirement} onDelete={handleDeleteRequirement} onAdd={handleAddRequirement} onStatusChange={handleStatusChange} onLinkArtifact={handleLinkArtifact} />}
+        {activeView === 'requirements' && <RequirementsView requirements={requirements} needs={needs} conops={conops} onEdit={handleEditRequirement} onDelete={handleDeleteRequirement} onAdd={handleAddRequirement} onStatusChange={handleStatusChange} onLinkArtifact={handleLinkArtifact} onNavigate={setActiveView} />}
         {activeView === 'traceability' && <TraceabilityView requirements={requirements} needs={needs} conops={conops} goals={goals} />}
         {activeView === 'validation' && <ValidationView requirements={requirements} onStatusChange={handleStatusChange} onLinkArtifact={handleLinkArtifact} />}
         {activeView === 'verification' && <VerificationView requirements={requirements} onStatusChange={handleStatusChange} onLinkArtifact={handleLinkArtifact} />}
