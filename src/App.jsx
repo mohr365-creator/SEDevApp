@@ -979,40 +979,42 @@ const RequirementsView = ({ requirements, needs, conops, onEdit, onDelete, onAdd
                   </div>
                 </div>
 
-                {/* Validation Status - Read Only with Link */}
-                <button 
-                  onClick={() => onNavigate('validation')} 
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-green-200 bg-green-50 hover:bg-green-100 transition-colors cursor-pointer"
-                  title="Click to go to Validation page to update status"
-                >
-                  <ShieldCheck size={14} className="text-green-600" />
-                  <span className="text-xs font-medium text-green-700">Validation:</span>
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                    req.validationStatus === 'Validated' ? 'bg-green-200 text-green-900' :
-                    req.validationStatus === 'In Review' ? 'bg-yellow-200 text-yellow-900' :
-                    'bg-slate-200 text-slate-700'
+                {/* Validation Status - Clean Style like DAL */}
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => onNavigate('validation')} 
+                    className="text-slate-500 hover:text-green-600 transition-colors text-sm"
+                    title="Click to go to Validation page to update status"
+                  >
+                    Validation:
+                  </button>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium border ${
+                    req.validationStatus === 'Validated' ? 'bg-green-100 text-green-800 border-green-200' :
+                    req.validationStatus === 'In Review' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                    'bg-slate-100 text-slate-700 border-slate-200'
                   }`}>
                     {req.validationStatus}
                   </span>
-                </button>
+                </div>
 
-                {/* Verification Status - Read Only with Link */}
-                <button 
-                  onClick={() => onNavigate('verification')} 
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors cursor-pointer"
-                  title="Click to go to Verification page to update status"
-                >
-                  <CheckCircle size={14} className="text-indigo-600" />
-                  <span className="text-xs font-medium text-indigo-700">Verification:</span>
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                    req.verificationStatus === 'Verified' ? 'bg-indigo-200 text-indigo-900' :
-                    req.verificationStatus === 'In Progress' ? 'bg-yellow-200 text-yellow-900' :
-                    req.verificationStatus === 'Failed' ? 'bg-red-200 text-red-900' :
-                    'bg-slate-200 text-slate-700'
+                {/* Verification Status - Clean Style like DAL */}
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => onNavigate('verification')} 
+                    className="text-slate-500 hover:text-indigo-600 transition-colors text-sm"
+                    title="Click to go to Verification page to update status"
+                  >
+                    Verification:
+                  </button>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium border ${
+                    req.verificationStatus === 'Verified' ? 'bg-indigo-100 text-indigo-800 border-indigo-200' :
+                    req.verificationStatus === 'In Progress' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                    req.verificationStatus === 'Failed' ? 'bg-red-100 text-red-800 border-red-200' :
+                    'bg-slate-100 text-slate-700 border-slate-200'
                   }`}>
                     {req.verificationStatus}
                   </span>
-                </button>
+                </div>
               </div>
             </div>
           </Card>
