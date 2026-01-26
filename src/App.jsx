@@ -507,6 +507,7 @@ const DashboardView = ({ stats, requirements, needs, conops, goals }) => {
           </div>
         </div>
       </Card>
+      </div>
     </div>
   );
 };
